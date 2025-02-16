@@ -7,11 +7,11 @@ variable "project_id" {
 variable "region" {
   description = "The region in which to provision resources."
   type        = string
-  default     = "eu-west3-a"
+  default     = "europe-west3"
 }
 
 variable "zone" {
   description = "The zone in which to provision resources."
   type        = string
-  default     = "eu-west3-a"
+  default     = "europe-west3-a"
 }
