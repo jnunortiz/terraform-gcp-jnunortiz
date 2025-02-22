@@ -1,4 +1,3 @@
-# Terraform Settings Block  
 terraform {
   required_version = ">= 1.10.05"
 
@@ -8,11 +7,4 @@ terraform {
       version = ">= 6.21.0"
     }
   }
-}
-
-# Provider Block
-provider "google" {
-  project = var.project_id
-  region  = var.region
-  billing_project = "terraform-gcp-jnunortiz"
 }
