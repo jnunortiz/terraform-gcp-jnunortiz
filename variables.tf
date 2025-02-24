@@ -27,3 +27,9 @@ variable "europe_west3_a" {
   type        = string
   default     = "europe-west3-a"
 }
+
+variable "machine_type" {
+  description = "The machine type to use for the compute instance."
+  type        = string
+  default     = "e2-micro"
+}

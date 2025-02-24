@@ -2,8 +2,8 @@
 resource "google_compute_instance" "vm_1" {
   project = var.project_id
   name         = "vm-1"
-  machine_type = "e2-micro"
-  zone = var.europe_west1_a
+  machine_type = var.machine_type
+  zone = var.europe_west3_a
   tags = [
     tolist(google_compute_firewall.fw_ssh.target_tags)[0], 
     tolist(google_compute_firewall.fw_http.target_tags)[0]
@@ -20,7 +20,7 @@ resource "google_compute_instance" "vm_1" {
 
   network_interface {
     network    = google_compute_network.my_vpc.id
-    subnetwork = google_compute_subnetwork.my_subnet_1.id
+    subnetwork = google_compute_subnetwork.my_subnet_2.id
     access_config {
     }
   }
