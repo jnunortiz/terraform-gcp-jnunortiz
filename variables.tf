@@ -4,13 +4,25 @@ variable "project_id" {
   default     = "terraform-gcp-jnunortiz"
 }
 
-variable "region" {
+variable "europe_west1" {
+  description = "The region in which to provision resources."
+  type        = string
+  default     = "europe-west1"
+}
+
+variable "europe_west1_a" {
+  description = "The zone in which to provision resources."
+  type        = string
+  default     = "europe-west1-a"
+}
+
+variable "europe_west3" {
   description = "The region in which to provision resources."
   type        = string
   default     = "europe-west3"
 }
 
-variable "zone" {
+variable "europe_west3_a" {
   description = "The zone in which to provision resources."
   type        = string
   default     = "europe-west3-a"
