@@ -1,6 +1,5 @@
 options:
-  logging: CLOUD_LOGGING_ONLY  # This ensures the logs are sent to Cloud Logging
-  logs_bucket: gs://cloudbuild-logs-jnunortiz  # This specifies the bucket for logs
+  logging: CLOUD_LOGGING_ONLY
 
 steps:
 - id: 'branch name'
