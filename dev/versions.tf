@@ -7,4 +7,9 @@ terraform {
       version = ">= 6.21.0"
     }
   }
+
+  backend "gcs" {
+    bucket = "gcp-jnunortiz-terraform-state"
+    prefix = "env/dev"
+  }
 }

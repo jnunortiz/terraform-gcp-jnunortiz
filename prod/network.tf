@@ -1,23 +1,17 @@
 # Resource: VPC
 resource "google_compute_network" "my_vpc" {
   project = var.project_id
-  name                    = "my-vpc"
+  name                    = "${var.environment}-my-vpc"
   auto_create_subnetworks = false
 }
 
-# Subnet 1: europe-west1
-resource "google_compute_subnetwork" "my_subnet_1" {
-  provider = google.europe_west1
-  name          = "my-subnet"
-  ip_cidr_range = "10.128.0.0/20"
-  network       = google_compute_network.my_vpc.id
-}
-
-# Subnet 2: europe-west3
-resource "google_compute_subnetwork" "my_subnet_2" {
+# Subnets: europe-west3
+resource "google_compute_subnetwork" "my_subnet" {
+  count = 1
   provider = google.europe_west3
-  name          = "my-subnet"
-  ip_cidr_range = "10.132.0.0/20"
+  name          = "subnet-${count.index + 1}"
+  ip_cidr_range = cidrsubnet("10.128.0.0/16", 4, count.index)
+  region        = var.europe_west1
   network       = google_compute_network.my_vpc.id
 }
 

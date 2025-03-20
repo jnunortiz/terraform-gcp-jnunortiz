@@ -8,7 +8,7 @@ variable "europe_west1" {
   type        = string
 }
 
-variable "europe_west1_a" {
+variable "europe_west1_b" {
   description = "The zone in which to provision resources."
   type        = string
 }
@@ -25,5 +25,10 @@ variable "europe_west3_a" {
 
 variable "machine_type" {
   description = "The machine type to use for the compute instance."
+  type        = string
+}
+
+variable "environment" {
+  description = "The environment in which the resources are deployed."
   type        = string
 }

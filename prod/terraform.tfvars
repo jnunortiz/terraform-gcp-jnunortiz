@@ -1,0 +1,7 @@
+project_id     = "terraform-gcp-jnunortiz"
+europe_west1   = "europe-west1"
+europe_west1_b = "europe-west1-b"
+europe_west3   = "europe-west3"
+europe_west3_a = "europe-west3-a"
+machine_type   = "e2-micro"
+environment    = "prod"
