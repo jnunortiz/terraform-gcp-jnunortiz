@@ -14,7 +14,7 @@ steps:
 
 - id: 'check env'
   name: 'alpine'
-  entrypoint: 'sh'
+  entrypoint: 'bash'
   args:
     - '-c'
     - |
