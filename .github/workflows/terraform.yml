@@ -38,6 +38,12 @@ jobs:
             exit 1
           fi
           echo "Valid environment: $BRANCH_NAME, proceeding with Terraform steps."
+      
+      # Authenticate to Google Cloud
+      - name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v2
+        with:
+          credentials_json: '${{ secrets.GOOGLE_CREDENTIALS }}'
 
       # Install Terraform using the official HashiCorp action
       - name: Setup Terraform
