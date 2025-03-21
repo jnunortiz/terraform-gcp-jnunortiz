@@ -21,7 +21,7 @@ steps:
       VALID_ENVS=("dev" "prod")
       if [[ ! " ${VALID_ENVS[@]} " =~ " ${BRANCH_NAME} " ]]; then
         echo "Invalid environment: $BRANCH_NAME"
-        exit 0
+        exit 1
       fi
 
 - id: 'tf init'
