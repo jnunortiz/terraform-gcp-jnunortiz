@@ -13,7 +13,6 @@ steps:
       echo "**********"
 
 - id: 'check env'
-  name: 'alpine'
   entrypoint: 'bash'
   args:
     - '-c'
