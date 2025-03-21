@@ -39,21 +39,11 @@ jobs:
           fi
           echo "Valid environment: $BRANCH_NAME, proceeding with Terraform steps."
 
-      # Install Terraform
-      - name: Install Terraform
-        run: |
-          # Add HashiCorp GPG key
-          curl -fsSL https://apt.releases.hashicorp.com/gpg | sudo gpg --dearmor -o /usr/share/keyrings/hashicorp-archive-keyring.gpg
-          
-          # Add HashiCorp repository
-          sudo apt update -y
-          sudo apt install -y software-properties-common
-          sudo add-apt-repository "deb [signed-by=/usr/share/keyrings/hashicorp-archive-keyring.gpg] https://apt.releases.hashicorp.com ubuntu-$(lsb_release -c | awk '{print $2}') main"
-          
-          # Update package list and install Terraform
-          sudo apt update -y
-          sudo apt install -y terraform
-
+      # Install Terraform using the official HashiCorp action
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v1
+        with:
+          terraform_version: 1.10.5
 
       # Terraform init
       - name: Terraform Init
