@@ -22,12 +22,18 @@ jobs:
           echo "Branch: $GITHUB_REF"
           echo "**********"
 
+      # Extract the branch name from GITHUB_REF (e.g., refs/heads/dev -> dev)
+      - name: Set Branch Name
+        run: |
+          BRANCH_NAME=$(echo $GITHUB_REF | sed 's/refs\/heads\///')
+          echo "Branch name: $BRANCH_NAME"
+          echo "BRANCH_NAME=$BRANCH_NAME" >> $GITHUB_ENV
+
       # Check if environment is valid (only dev, prod allowed)
       - name: Check if environment is valid
         run: |
           VALID_ENVS=("dev" "prod")
-          BRANCH_NAME=$(basename $GITHUB_REF)
-          if [[ ! " ${VALID_ENVS[@]} " =~ " ${BRANCH_NAME} " ]] && [[ "$BRANCH_NAME" != "main" ]]; then
+          if [[ ! " ${VALID_ENVS[@]} " =~ " ${BRANCH_NAME} " ]]; then
             echo "Invalid environment: $BRANCH_NAME"
             exit 1
           fi
