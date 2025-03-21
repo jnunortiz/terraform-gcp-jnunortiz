@@ -1,0 +1,64 @@
+name: Terraform CI/CD
+
+on:
+  push:
+    branches:
+      - dev
+      - prod
+
+jobs:
+  terraform:
+    runs-on: ubuntu-latest
+
+    steps:
+      # Checkout the repository
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      # Print the branch name
+      - name: Display Branch Name
+        run: |
+          echo "**********"
+          echo "Branch: $GITHUB_REF"
+          echo "**********"
+
+      # Check if environment is valid (only dev, prod allowed)
+      - name: Check if environment is valid
+        run: |
+          VALID_ENVS=("dev" "prod")
+          BRANCH_NAME=$(basename $GITHUB_REF)
+          if [[ ! " ${VALID_ENVS[@]} " =~ " ${BRANCH_NAME} " ]] && [[ "$BRANCH_NAME" != "main" ]]; then
+            echo "Invalid environment: $BRANCH_NAME"
+            exit 1
+          fi
+          echo "Valid environment: $BRANCH_NAME, proceeding with Terraform steps."
+
+      # Terraform init
+      - name: Terraform Init
+        run: |
+          if [ -d "$BRANCH_NAME" ]; then
+            cd $BRANCH_NAME
+            terraform init
+          else
+            echo "Directory $BRANCH_NAME does not exist, skipping terraform init."
+          fi
+
+      # Terraform plan
+      - name: Terraform Plan
+        run: |
+          if [ -d "$BRANCH_NAME" ]; then
+            cd $BRANCH_NAME
+            terraform plan
+          else
+            echo "Directory $BRANCH_NAME does not exist, skipping terraform plan."
+          fi
+
+      # Terraform apply
+      - name: Terraform Apply
+        run: |
+          if [ -d "$BRANCH_NAME" ]; then
+            cd $BRANCH_NAME
+            terraform apply -auto-approve
+          else
+            echo "Directory $BRANCH_NAME does not exist, skipping terraform apply."
+          fi
