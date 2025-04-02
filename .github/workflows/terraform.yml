@@ -35,6 +35,8 @@ jobs:
     name: Setup Terraform
     needs: authenticate  # Ensures authentication is done first
     runs-on: ubuntu-latest
+    outputs:
+      branch_name: ${{ steps.set_branch_name.outputs.BRANCH_NAME }}
 
     steps:
       - name: Checkout Code
@@ -51,11 +53,12 @@ jobs:
           echo "Branch: $GITHUB_REF"
           echo "**********"
 
-      - name: Set Branch Name
+      - id: set_branch_name
+        name: Set Branch Name
         run: |
           BRANCH_NAME=$(echo $GITHUB_REF | sed 's/refs\/heads\///')
           echo "Branch name: $BRANCH_NAME"
-          echo "BRANCH_NAME=$BRANCH_NAME" >> $GITHUB_ENV
+          echo "BRANCH_NAME=$BRANCH_NAME" >> $GITHUB_OUTPUT
 
       - name: Validate Environment
         run: |
@@ -70,6 +73,8 @@ jobs:
     name: Terraform Plan
     needs: setup-terraform
     runs-on: ubuntu-latest
+    env:
+      BRANCH_NAME: ${{ needs.setup-terraform.outputs.branch_name }}
 
     steps:
       - name: Checkout Code
@@ -77,6 +82,7 @@ jobs:
 
       - name: Terraform Init
         run: |
+          echo "Using branch name: $BRANCH_NAME"
           if [ -d "$BRANCH_NAME" ]; then
             cd $BRANCH_NAME
             terraform init
@@ -97,6 +103,8 @@ jobs:
     name: Terraform Apply
     needs: terraform-plan
     runs-on: ubuntu-latest
+    env:
+      BRANCH_NAME: ${{ needs.setup-terraform.outputs.branch_name }}
 
     steps:
       - name: Checkout Code
