@@ -6,31 +6,58 @@ on:
       - dev
       - prod
 
+env:
+  GCP_WORKLOAD_ID_PROVIDER: "projects/721692020413/locations/global/workloadIdentityPools/github-actions/providers/github"
+  GCP_SERVICE_ACCOUNT_EMAIL: "terraform-service-account@terraform-gcp-jnunortiz.iam.gserviceaccount.com"
+
 jobs:
-  terraform:
+  authenticate:
+    name: Authenticate to Google Cloud
+    runs-on: ubuntu-latest
+
+    permissions:
+      id-token: write
+      contents: read
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - id: 'auth'
+        name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v1
+        with:
+          create_credentials_file: true
+          workload_identity_provider: ${{ env.GCP_WORKLOAD_ID_PROVIDER }}
+          service_account: ${{ env.GCP_SERVICE_ACCOUNT_EMAIL }}
+
+  setup-terraform:
+    name: Setup Terraform
+    needs: authenticate  # Ensures authentication is done first
     runs-on: ubuntu-latest
 
     steps:
-      # Checkout the repository
-      - name: Checkout code
-        uses: actions/checkout@v2
+      - name: Checkout Code
+        uses: actions/checkout@v4
 
-      # Print the branch name
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v2
+        with:
+          terraform_version: 1.10.5
+
       - name: Display Branch Name
         run: |
           echo "**********"
           echo "Branch: $GITHUB_REF"
           echo "**********"
 
-      # Extract the branch name from GITHUB_REF (e.g., refs/heads/dev -> dev)
       - name: Set Branch Name
         run: |
           BRANCH_NAME=$(echo $GITHUB_REF | sed 's/refs\/heads\///')
           echo "Branch name: $BRANCH_NAME"
           echo "BRANCH_NAME=$BRANCH_NAME" >> $GITHUB_ENV
 
-      # Check if environment is valid (only dev, prod allowed)
-      - name: Check if environment is valid
+      - name: Validate Environment
         run: |
           VALID_ENVS=("dev" "prod")
           if [[ ! " ${VALID_ENVS[@]} " =~ " ${BRANCH_NAME} " ]]; then
@@ -38,20 +65,16 @@ jobs:
             exit 1
           fi
           echo "Valid environment: $BRANCH_NAME, proceeding with Terraform steps."
-      
-      # Authenticate to Google Cloud
-      - name: Authenticate to Google Cloud
-        uses: google-github-actions/auth@v2
-        with:
-          credentials_json: '${{ secrets.GOOGLE_CREDENTIALS }}'
 
-      # Install Terraform using the official HashiCorp action
-      - name: Setup Terraform
-        uses: hashicorp/setup-terraform@v1
-        with:
-          terraform_version: 1.10.5
+  terraform-plan:
+    name: Terraform Plan
+    needs: setup-terraform
+    runs-on: ubuntu-latest
 
-      # Terraform init
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
       - name: Terraform Init
         run: |
           if [ -d "$BRANCH_NAME" ]; then
@@ -61,7 +84,6 @@ jobs:
             echo "Directory $BRANCH_NAME does not exist, skipping terraform init."
           fi
 
-      # Terraform plan
       - name: Terraform Plan
         run: |
           if [ -d "$BRANCH_NAME" ]; then
@@ -71,7 +93,15 @@ jobs:
             echo "Directory $BRANCH_NAME does not exist, skipping terraform plan."
           fi
 
-      # Terraform apply
+  terraform-apply:
+    name: Terraform Apply
+    needs: terraform-plan
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
       - name: Terraform Apply
         run: |
           if [ -d "$BRANCH_NAME" ]; then
