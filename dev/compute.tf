@@ -1,5 +1,5 @@
 # Resource: Compute Instance
-resource "google_compute_instance" "vm_1" {
+resource "google_compute_instance" "vm_instance" {
   project = var.project_id
   name         = "${var.environment}-vm-1"
   machine_type = var.machine_type
