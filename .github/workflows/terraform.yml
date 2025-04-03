@@ -55,6 +55,11 @@ jobs:
             echo "GCP_SERVICE_ACCOUNT_EMAIL=${{ secrets.GCP_SERVICE_ACCOUNT_EMAIL_PROD }}" >> $GITHUB_ENV
           fi
 
+      - name: Check Environment Variables
+        run: |
+          echo "Using GCP_SERVICE_ACCOUNT_EMAIL: ${{ env.GCP_SERVICE_ACCOUNT_EMAIL }}"
+          echo "Using GCP_WORKLOAD_ID_PROVIDER: ${{ env.GCP_WORKLOAD_ID_PROVIDER }}"
+
       - name: Terraform Init
         run: terraform init
 
