@@ -59,6 +59,7 @@ jobs:
           BRANCH_NAME=$(echo $GITHUB_REF | sed 's/refs\/heads\///')
           echo "Branch name: $BRANCH_NAME"
           echo "BRANCH_NAME=$BRANCH_NAME" >> $GITHUB_ENV
+          echo "::set-output name=branch_name::$BRANCH_NAME"
 
       - name: Validate Environment
         run: |
