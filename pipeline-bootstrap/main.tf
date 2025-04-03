@@ -16,7 +16,8 @@ resource "google_project_iam_member" "service_account_roles" {
     "roles/compute.instanceAdmin.v1",        # Needed for VM creation, destruction, and management
     "roles/compute.securityAdmin",           # Needed for firewall and security management
     "roles/storage.objectViewer",            # Needed for GCS bucket access
-    "roles/storage.objectAdmin"              # Needed for GCS bucket management
+    "roles/storage.objectAdmin",             # Needed for GCS bucket management
+    "roles/iam.workloadIdentityUser"         # Needed for workload identity federation
   ])
   project = var.project_id
   role    = each.value
