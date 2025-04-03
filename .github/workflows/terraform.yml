@@ -8,8 +8,9 @@ on:
   workflow_dispatch:
 
 env:
-  GCP_WORKLOAD_ID_PROVIDER: "projects/721692020413/locations/global/workloadIdentityPools/github-actions-pool/providers/github"
-  GCP_SERVICE_ACCOUNT_EMAIL: "terraform-github-account@terraform-gcp-jnunortiz.iam.gserviceaccount.com"
+  # Default variables in case the branch does not match
+  GCP_WORKLOAD_ID_PROVIDER: ${{ secrets.GCP_WORKLOAD_ID_PROVIDER_DEV }}
+  GCP_SERVICE_ACCOUNT_EMAIL: ${{ secrets.GCP_SERVICE_ACCOUNT_EMAIL_DEV }}
 
 jobs:
   run-all:
@@ -35,42 +36,30 @@ jobs:
           echo "Credentials file path: ${{ steps.auth.outputs.credentials_file_path }}"
           echo "GOOGLE_APPLICATION_CREDENTIALS=${{ steps.auth.outputs.credentials_file_path }}" >> $GITHUB_ENV
 
-      - name: Set Branch Name
-        run: |
-          BRANCH_NAME=$(echo $GITHUB_REF | sed 's/refs\/heads\///')
-          echo "Branch name: $BRANCH_NAME"
-          echo "BRANCH_NAME=$BRANCH_NAME" >> $GITHUB_ENV
-        
-
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v2
         with:
           terraform_version: 1.10.5
 
-      - name: Terraform Init
+      - name: Set TFVARS file and Set Environment-Specific Secrets
         run: |
-          # Use the branch name from environment variable
-          if [ -d "$BRANCH_NAME" ]; then
-            cd "$BRANCH_NAME"
-            terraform init
-          else
-            echo "Directory $BRANCH_NAME does not exist, skipping terraform init."
+          if [ "$GITHUB_REF" == "refs/heads/dev" ]; then
+            echo "Using dev.tfvars"
+            echo "TFVARS_FILE=dev.tfvars" >> $GITHUB_ENV
+            echo "GCP_WORKLOAD_ID_PROVIDER=${{ secrets.GCP_WORKLOAD_ID_PROVIDER_DEV }}" >> $GITHUB_ENV
+            echo "GCP_SERVICE_ACCOUNT_EMAIL=${{ secrets.GCP_SERVICE_ACCOUNT_EMAIL_DEV }}" >> $GITHUB_ENV
+          elif [ "$GITHUB_REF" == "refs/heads/prod" ]; then
+            echo "Using prod.tfvars"
+            echo "TFVARS_FILE=prod.tfvars" >> $GITHUB_ENV
+            echo "GCP_WORKLOAD_ID_PROVIDER=${{ secrets.GCP_WORKLOAD_ID_PROVIDER_PROD }}" >> $GITHUB_ENV
+            echo "GCP_SERVICE_ACCOUNT_EMAIL=${{ secrets.GCP_SERVICE_ACCOUNT_EMAIL_PROD }}" >> $GITHUB_ENV
           fi
+
+      - name: Terraform Init
+        run: terraform init
 
       - name: Terraform Plan
-        run: |
-          if [ -d "$BRANCH_NAME" ]; then
-            cd "$BRANCH_NAME"
-            terraform plan -var-file="$BRANCH_NAME.tfvars"
-          else
-            echo "Directory $BRANCH_NAME does not exist, skipping terraform plan."
-          fi
+        run: terraform plan -var-file=${{ env.TFVARS_FILE }}
 
       - name: Terraform Apply
-        run: |
-          if [ -d "$BRANCH_NAME" ]; then
-            cd "$BRANCH_NAME"
-            terraform apply -auto-approve -var-file="$BRANCH_NAME.tfvars"
-          else
-            echo "Directory $BRANCH_NAME does not exist, skipping terraform apply."
-          fi
+        run: terraform apply -auto-approve -var-file=${{ env.TFVARS_FILE }}

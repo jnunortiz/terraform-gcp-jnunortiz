@@ -21,6 +21,7 @@ resource "google_project_iam_member" "service_account_roles" {
   project = var.project_id
   role    = each.value
   member  = "serviceAccount:${google_service_account.terraform_service_account.email}"
+  depends_on = [google_service_account.terraform_service_account] # Ensure service account is created first
 }
 
 # Configure workload identity federation
@@ -44,6 +45,7 @@ resource "google_iam_workload_identity_pool_provider" "github_provider" {
   oidc {
     issuer_uri = "https://token.actions.githubusercontent.com"
   }
+  depends_on = [google_iam_workload_identity_pool.github_actions_pool] # Ensure pool is created first
 }
 
 # Allow the service account to impersonate via workload identity federation
@@ -51,4 +53,9 @@ resource "google_service_account_iam_member" "workload_identity_binding" {
   service_account_id = google_service_account.terraform_service_account.name
   role               = "roles/iam.workloadIdentityUser"
   member             = "principalSet://iam.googleapis.com/${google_iam_workload_identity_pool.github_actions_pool.name}/attribute.repository/${var.github_repo}"
+
+  depends_on = [
+    google_service_account.terraform_service_account,  # Ensure service account is created first
+    google_iam_workload_identity_pool_provider.github_provider  # Ensure provider is created
+  ]
 }
