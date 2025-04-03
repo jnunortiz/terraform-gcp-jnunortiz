@@ -8,8 +8,8 @@ on:
   workflow_dispatch:
 
 env:
-  GCP_WORKLOAD_ID_PROVIDER: "projects/721692020413/locations/global/workloadIdentityPools/dev-github-actions-pool/providers/github" 
-  GCP_SERVICE_ACCOUNT_EMAIL: "dev-terraform-github-account@terraform-gcp-jnunortiz.iam.gserviceaccount.com"
+  GCP_WORKLOAD_ID_PROVIDER: "projects/721692020413/locations/global/workloadIdentityPools/github-actions-pool/providers/github" 
+  GCP_SERVICE_ACCOUNT_EMAIL: "terraform-service-account@terraform-gcp-jnunortiz.iam.gserviceaccount.com"
 
 jobs:
   run-all:
