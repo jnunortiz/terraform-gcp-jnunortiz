@@ -57,8 +57,13 @@ jobs:
 
       - name: Check Environment Variables
         run: |
-          echo "Using GCP_SERVICE_ACCOUNT_EMAIL: ${{ env.GCP_SERVICE_ACCOUNT_EMAIL }}"
-          echo "Using GCP_WORKLOAD_ID_PROVIDER: ${{ env.GCP_WORKLOAD_ID_PROVIDER }}"
+          if [ "$GITHUB_REF" == "refs/heads/dev" ]; then
+            echo "Using GCP_WORKLOAD_ID_PROVIDER: ${{ secrets.GCP_WORKLOAD_ID_PROVIDER_DEV }}"
+            echo "Using GCP_SERVICE_ACCOUNT_EMAIL: ${{ secrets.GCP_SERVICE_ACCOUNT_EMAIL_DEV }}"
+          elif [ "$GITHUB_REF" == "refs/heads/prod" ]; then
+            echo "Using GCP_WORKLOAD_ID_PROVIDER: ${{ secrets.GCP_WORKLOAD_ID_PROVIDER_PROD }}"
+            echo "Using GCP_SERVICE_ACCOUNT_EMAIL: ${{ secrets.GCP_SERVICE_ACCOUNT_EMAIL_PROD }}"
+          fi
 
       - name: Terraform Init
         run: terraform init
