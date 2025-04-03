@@ -14,8 +14,8 @@ resource "google_project_iam_member" "service_account_roles" {
   for_each = toset([
     "roles/iam.serviceAccountTokenCreator",  # Needed to impersonate the service account
     "roles/compute.instanceAdmin.v1",        # Needed for VM creation, destruction, and management
-    "roles/compute.securityAdmin"          # Needed for firewall and security management
-    # "roles/iam.serviceAccountUser"           # Needed for service account usage
+    "roles/compute.securityAdmin",           # Needed for firewall and security management
+    "roles/storage.objectAdmin"              # Needed for GCS bucket management
   ])
   project = var.project_id
   role    = each.value
