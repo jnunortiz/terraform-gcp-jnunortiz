@@ -12,12 +12,10 @@ resource "google_service_account" "terraform_service_account" {
 # Assign IAM roles to the service account
 resource "google_project_iam_member" "service_account_roles" {
   for_each = toset([
-    "roles/storage.admin",
-    "roles/iam.serviceAccountTokenCreator",
-    "roles/iam.serviceAccountUser",
-    "roles/resourcemanager.projectIamAdmin",
-    "roles/compute.networkAdmin",
-    "roles/compute.instanceAdmin.v1"
+    "roles/iam.serviceAccountTokenCreator",  # Needed to impersonate the service account
+    "roles/compute.instanceAdmin.v1",        # Needed for VM creation, destruction, and management
+    "roles/compute.securityAdmin"          # Needed for firewall and security management
+    # "roles/iam.serviceAccountUser"           # Needed for service account usage
   ])
   project = var.project_id
   role    = each.value
