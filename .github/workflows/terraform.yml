@@ -68,10 +68,10 @@ jobs:
 
   terraform-plan:
     name: Terraform Plan
-    needs: setup-terraform
+    needs: validate-branch
     runs-on: ubuntu-latest
     env:
-      BRANCH_NAME: ${{needs.setup-terraform.outputs.BRANCH_NAME}}
+      BRANCH_NAME: ${{needs.validate-branch.outputs.BRANCH_NAME}}
 
     steps:
       - name: Checkout Code
@@ -106,7 +106,7 @@ jobs:
     needs: terraform-plan
     runs-on: ubuntu-latest
     env:
-      BRANCH_NAME: ${{needs.setup-terraform.outputs.BRANCH_NAME}}
+      BRANCH_NAME: ${{needs.validate-branch.outputs.BRANCH_NAME}}
 
     steps:
       - name: Checkout Code
