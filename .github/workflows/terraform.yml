@@ -30,11 +30,19 @@ jobs:
           workload_identity_provider: ${{ env.GCP_WORKLOAD_ID_PROVIDER }}
           service_account: ${{ env.GCP_SERVICE_ACCOUNT_EMAIL }}
 
+      - name: Capture credentials file path
+        id: capture-credentials-path
+        run: |
+          # Capture the path of the credentials file that was created dynamically
+          CREDENTIALS_FILE_PATH=$(ls /home/runner/work/terraform-gcp-jnunortiz/terraform-gcp-jnunortiz/gha-creds-*.json)
+          echo "Credential file created at: $CREDENTIALS_FILE_PATH"
+          echo "CREDENTIALS_PATH=$CREDENTIALS_FILE_PATH" >> $GITHUB_ENV
+  
       - name: Save the credentials as an artifact
         uses: actions/upload-artifact@v4
         with:
           name: gcp-credentials
-          path: /home/runner/work/terraform-gcp-jnunortiz/terraform-gcp-jnunortiz/gha-creds-a6b25b4557b0efa1.json
+          path: ${{ env.CREDENTIALS_PATH }}
 
   validate-branch:
     name: Setup Terraform
@@ -94,8 +102,7 @@ jobs:
 
       - name: Set the credentials environment variable
         run: |
-          export GOOGLE_APPLICATION_CREDENTIALS=$(pwd)/gha-creds-a6b25b4557b0efa1.json
-          echo "GOOGLE_APPLICATION_CREDENTIALS=$GOOGLE_APPLICATION_CREDENTIALS" >> $GITHUB_ENV
+          export GOOGLE_APPLICATION_CREDENTIALS=$(pwd)/gha-creds-*.json
 
       - name: Terraform Init
         run: |
@@ -139,8 +146,7 @@ jobs:
 
       - name: Set the credentials environment variable
         run: |
-          export GOOGLE_APPLICATION_CREDENTIALS=$(pwd)/gha-creds-a6b25b4557b0efa1.json
-          echo "GOOGLE_APPLICATION_CREDENTIALS=$GOOGLE_APPLICATION_CREDENTIALS" >> $GITHUB_ENV
+          export GOOGLE_APPLICATION_CREDENTIALS=$(pwd)/gha-creds-*.json
 
       - name: Terraform Apply
         run: |
