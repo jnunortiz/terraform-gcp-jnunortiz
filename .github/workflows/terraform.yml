@@ -30,6 +30,12 @@ jobs:
           workload_identity_provider: ${{ env.GCP_WORKLOAD_ID_PROVIDER }}
           service_account: ${{ env.GCP_SERVICE_ACCOUNT_EMAIL }}
 
+      - name: Save the credentials as an artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: gcp-credentials
+          path: /home/runner/work/terraform-gcp-jnunortiz/terraform-gcp-jnunortiz/gha-creds-a6b25b4557b0efa1.json
+
   validate-branch:
     name: Setup Terraform
     needs: authenticate
@@ -80,6 +86,16 @@ jobs:
         uses: hashicorp/setup-terraform@v2
         with:
           terraform_version: 1.10.5
+
+      - name: Download GCP Credentials
+        uses: actions/download-artifact@v3
+        with:
+          name: gcp-credentials
+
+      - name: Set the credentials environment variable
+        run: |
+          export GOOGLE_APPLICATION_CREDENTIALS=$(pwd)/gha-creds-a6b25b4557b0efa1.json
+          echo "GOOGLE_APPLICATION_CREDENTIALS=$GOOGLE_APPLICATION_CREDENTIALS" >> $GITHUB_ENV
 
       - name: Terraform Init
         run: |
