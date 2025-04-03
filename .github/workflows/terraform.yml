@@ -30,6 +30,12 @@ jobs:
           workload_identity_provider: ${{ env.GCP_WORKLOAD_ID_PROVIDER }}
           service_account: ${{ env.GCP_SERVICE_ACCOUNT_EMAIL }}
 
+      - id: 'gcloud'
+        name: 'gcloud'
+        run: |-
+          gcloud auth login --brief --cred-file="${{ steps.auth.outputs.credentials_file_path }}"
+          gcloud services list
+
       - name: Capture Credentials and Set Environment Variable
         run: |
           echo "Credentials file path: ${{ steps.auth.outputs.credentials_file_path }}"
