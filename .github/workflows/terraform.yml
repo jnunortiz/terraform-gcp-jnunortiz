@@ -31,7 +31,7 @@ jobs:
           service_account: ${{ env.GCP_SERVICE_ACCOUNT_EMAIL }}
 
       - name: Save the credentials as an artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: gcp-credentials
           path: /home/runner/work/terraform-gcp-jnunortiz/terraform-gcp-jnunortiz/gha-creds-a6b25b4557b0efa1.json
@@ -88,7 +88,7 @@ jobs:
           terraform_version: 1.10.5
 
       - name: Download GCP Credentials
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: gcp-credentials
 
@@ -131,6 +131,16 @@ jobs:
         uses: hashicorp/setup-terraform@v2
         with:
           terraform_version: 1.10.5
+
+      - name: Download GCP Credentials
+        uses: actions/download-artifact@v4
+        with:
+          name: gcp-credentials
+
+      - name: Set the credentials environment variable
+        run: |
+          export GOOGLE_APPLICATION_CREDENTIALS=$(pwd)/gha-creds-a6b25b4557b0efa1.json
+          echo "GOOGLE_APPLICATION_CREDENTIALS=$GOOGLE_APPLICATION_CREDENTIALS" >> $GITHUB_ENV
 
       - name: Terraform Apply
         run: |
