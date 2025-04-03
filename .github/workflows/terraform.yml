@@ -5,14 +5,15 @@ on:
     branches:
       - dev
       - prod
+  workflow_dispatch:
 
 env:
   GCP_WORKLOAD_ID_PROVIDER: "projects/721692020413/locations/global/workloadIdentityPools/github-actions/providers/github"
   GCP_SERVICE_ACCOUNT_EMAIL: "terraform-service-account@terraform-gcp-jnunortiz.iam.gserviceaccount.com"
 
 jobs:
-  authenticate:
-    name: Authenticate to Google Cloud
+  run-all:
+    name: Run Terraform
     runs-on: ubuntu-latest
     permissions:
       id-token: write
@@ -29,85 +30,29 @@ jobs:
           workload_identity_provider: ${{ env.GCP_WORKLOAD_ID_PROVIDER }}
           service_account: ${{ env.GCP_SERVICE_ACCOUNT_EMAIL }}
 
-      - id: capture-creds
-        name: Capture Credentials File Path
+      - name: Capture Credentials and Set Environment Variable
         run: |
           echo "Credentials file path: ${{ steps.auth.outputs.credentials_file_path }}"
-          echo "CREDENTIALS_PATH=${{ steps.auth.outputs.credentials_file_path }}" >> $GITHUB_OUTPUT
+          echo "GOOGLE_APPLICATION_CREDENTIALS=${{ steps.auth.outputs.credentials_file_path }}" >> $GITHUB_ENV
 
-      - name: Upload GCP Credentials Artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: gcp-credentials
-          path: ${{ steps.auth.outputs.credentials_file_path }}
-
-  validate-branch:
-    name: Setup Terraform
-    needs: authenticate
-    runs-on: ubuntu-latest
-    outputs:
-      BRANCH_NAME: ${{ steps.set_branch_name.outputs.BRANCH_NAME }}
-
-    steps:
-      - name: Checkout Code
-        uses: actions/checkout@v4
-
-      - name: Display Branch Name
+      - name: Display Branch Information
         run: |
-          echo "**********"
-          echo "Branch: $GITHUB_REF"
-          echo "**********"
-
-      - id: set_branch_name
-        name: Set Branch Name
-        run: |
-          BRANCH_NAME=$(echo $GITHUB_REF | sed 's/refs\/heads\///')
-          echo "Branch name: $BRANCH_NAME"
-          echo "BRANCH_NAME=$BRANCH_NAME" >> $GITHUB_OUTPUT
-
-      - name: Validate Environment
-        env: 
-          BRANCH_NAME: ${{ steps.set_branch_name.outputs.BRANCH_NAME }}
-        run: |
-          VALID_ENVS=("dev" "prod")
-          if [[ ! " ${VALID_ENVS[@]} " =~ " ${BRANCH_NAME} " ]]; then
-            echo "Invalid environment: $BRANCH_NAME"
-            exit 1
-          fi
-          echo "Valid environment: $BRANCH_NAME, proceeding with Terraform steps."
-
-  terraform-plan:
-    name: Terraform Plan
-    needs: validate-branch
-    runs-on: ubuntu-latest
-    env:
-      BRANCH_NAME: ${{ needs.validate-branch.outputs.BRANCH_NAME }}
-
-    steps:
-      - name: Checkout Code
-        uses: actions/checkout@v4
+          echo "GITHUB_REF: $GITHUB_REF"
+          # Extract branch name from GITHUB_REF (e.g., refs/heads/dev -> dev)
+          BRANCH_NAME=$(echo "$GITHUB_REF" | sed 's/refs\/heads\///')
+          echo "BRANCH_NAME=$BRANCH_NAME" >> $GITHUB_ENV
+          echo "Using branch: $BRANCH_NAME"
 
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v2
         with:
           terraform_version: 1.10.5
 
-      - name: Download GCP Credentials Artifact
-        uses: actions/download-artifact@v4
-        with:
-          name: gcp-credentials
-
-      - name: Set GOOGLE_APPLICATION_CREDENTIALS
-        run: |
-          CREDENTIALS_FILE_PATH=$(find "$(pwd)" -maxdepth 1 -name 'gha-creds-*.json' | head -n 1)
-          echo "Credentials file found at: $CREDENTIALS_FILE_PATH"
-          echo "GOOGLE_APPLICATION_CREDENTIALS=$CREDENTIALS_FILE_PATH" >> $GITHUB_ENV
-
       - name: Terraform Init
         run: |
-          echo "Using branch name: $BRANCH_NAME"
+          # Use the branch name from environment variable
           if [ -d "$BRANCH_NAME" ]; then
-            cd $BRANCH_NAME
+            cd "$BRANCH_NAME"
             terraform init
           else
             echo "Directory $BRANCH_NAME does not exist, skipping terraform init."
@@ -116,43 +61,16 @@ jobs:
       - name: Terraform Plan
         run: |
           if [ -d "$BRANCH_NAME" ]; then
-            cd $BRANCH_NAME
+            cd "$BRANCH_NAME"
             terraform plan
           else
             echo "Directory $BRANCH_NAME does not exist, skipping terraform plan."
           fi
 
-  terraform-apply:
-    name: Terraform Apply
-    needs: terraform-plan
-    runs-on: ubuntu-latest
-    env:
-      BRANCH_NAME: ${{ needs.validate-branch.outputs.BRANCH_NAME }}
-
-    steps:
-      - name: Checkout Code
-        uses: actions/checkout@v4
-
-      - name: Setup Terraform
-        uses: hashicorp/setup-terraform@v2
-        with:
-          terraform_version: 1.10.5
-
-      - name: Download GCP Credentials Artifact
-        uses: actions/download-artifact@v4
-        with:
-          name: gcp-credentials
-
-      - name: Set GOOGLE_APPLICATION_CREDENTIALS
-        run: |
-          CREDENTIALS_FILE_PATH=$(find "$(pwd)" -maxdepth 1 -name 'gha-creds-*.json' | head -n 1)
-          echo "Credentials file found at: $CREDENTIALS_FILE_PATH"
-          echo "GOOGLE_APPLICATION_CREDENTIALS=$CREDENTIALS_FILE_PATH" >> $GITHUB_ENV
-
       - name: Terraform Apply
         run: |
           if [ -d "$BRANCH_NAME" ]; then
-            cd $BRANCH_NAME
+            cd "$BRANCH_NAME"
             terraform apply -auto-approve
           else
             echo "Directory $BRANCH_NAME does not exist, skipping terraform apply."
