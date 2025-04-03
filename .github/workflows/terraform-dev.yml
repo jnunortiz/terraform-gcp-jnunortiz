@@ -8,7 +8,7 @@ on:
 
 env:
   GCP_WORKLOAD_ID_PROVIDER: "projects/721692020413/locations/global/workloadIdentityPools/github-actions-pool/providers/github"
-  GCP_SERVICE_ACCOUNT_EMAIL: "terraform-github-actions-account@terraform-gcp-jnunortiz.iam.gserviceaccount.com"
+  GCP_SERVICE_ACCOUNT_EMAIL: "terraform-github-account@terraform-gcp-jnunortiz.iam.gserviceaccount.com"
 
 jobs:
   run-all:
