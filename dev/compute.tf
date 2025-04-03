@@ -1,7 +1,7 @@
 # Resource: Compute Instance
 resource "google_compute_instance" "vm_1" {
   project = var.project_id
-  name         = "${var.environment}-vm-test"
+  name         = "${var.environment}-vm-1"
   machine_type = var.machine_type
   zone = var.europe_west3_a
   tags = [
