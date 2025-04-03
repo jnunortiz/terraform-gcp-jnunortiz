@@ -102,7 +102,7 @@ jobs:
 
       - name: Set the credentials environment variable
         run: |
-          CREDENTIALS_FILE_PATH=$(find . -name 'gha-creds-*.json' | head -n 1)
+          CREDENTIALS_FILE_PATH=$(find $(pwd) -name 'gha-creds-*.json' | head -n 1)
           echo "Credentials file found at: $CREDENTIALS_FILE_PATH"
           echo "GOOGLE_APPLICATION_CREDENTIALS=$CREDENTIALS_FILE_PATH" >> $GITHUB_ENV
 
@@ -148,7 +148,7 @@ jobs:
 
       - name: Set the credentials environment variable
         run: |
-          CREDENTIALS_FILE_PATH=$(find . -name 'gha-creds-*.json' | head -n 1)
+          CREDENTIALS_FILE_PATH=$(find $(pwd) -name 'gha-creds-*.json' | head -n 1)
           echo "Credentials file found at: $CREDENTIALS_FILE_PATH"
           echo "GOOGLE_APPLICATION_CREDENTIALS=$CREDENTIALS_FILE_PATH" >> $GITHUB_ENV
 
