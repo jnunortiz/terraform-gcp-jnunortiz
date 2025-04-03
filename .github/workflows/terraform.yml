@@ -31,7 +31,7 @@ jobs:
           workload_identity_provider: ${{ env.GCP_WORKLOAD_ID_PROVIDER }}
           service_account: ${{ env.GCP_SERVICE_ACCOUNT_EMAIL }}
 
-  setup-terraform:
+  validate-branch:
     name: Setup Terraform
     needs: authenticate
     runs-on: ubuntu-latest
@@ -41,21 +41,6 @@ jobs:
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
-
-      - name: Setup Terraform
-        uses: hashicorp/setup-terraform@v2
-        with:
-          terraform_version: 1.10.5
-
-      - name: Cache Terraform Binary and Plugins
-        uses: actions/cache@v3
-        with:
-          path: |
-            ~/.terraform.d/plugin-cache
-            /usr/local/bin/terraform
-          key: terraform-${{ runner.os }}-${{ hashFiles('**/*.tf') }}
-          restore-keys: |
-            terraform-${{ runner.os }}-
 
       - name: Display Branch Name
         run: |
@@ -92,15 +77,10 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v4
 
-      - name: Restore Terraform Binary and Plugins
-        uses: actions/cache@v3
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v2
         with:
-          path: |
-            ~/.terraform.d/plugin-cache
-            /usr/local/bin/terraform
-          key: terraform-${{ runner.os }}-${{ hashFiles('**/*.tf') }}
-          restore-keys: |
-            terraform-${{ runner.os }}-
+          terraform_version: 1.10.5
 
       - name: Terraform Init
         run: |
@@ -125,20 +105,17 @@ jobs:
     name: Terraform Apply
     needs: terraform-plan
     runs-on: ubuntu-latest
+    env:
+      BRANCH_NAME: ${{needs.setup-terraform.outputs.BRANCH_NAME}}
 
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
 
-      - name: Restore Terraform Binary and Plugins
-        uses: actions/cache@v3
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v2
         with:
-          path: |
-            ~/.terraform.d/plugin-cache
-            /usr/local/bin/terraform
-          key: terraform-${{ runner.os }}-${{ hashFiles('**/*.tf') }}
-          restore-keys: |
-            terraform-${{ runner.os }}-
+          terraform_version: 1.10.5
 
       - name: Terraform Apply
         run: |
