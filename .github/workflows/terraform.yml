@@ -35,8 +35,6 @@ jobs:
     name: Setup Terraform
     needs: authenticate
     runs-on: ubuntu-latest
-    outputs:
-      branch_name: ${{ steps.set_branch_name.outputs.BRANCH_NAME }}
 
     steps:
       - name: Checkout Code
@@ -69,7 +67,6 @@ jobs:
           BRANCH_NAME=$(echo $GITHUB_REF | sed 's/refs\/heads\///')
           echo "Branch name: $BRANCH_NAME"
           echo "BRANCH_NAME=$BRANCH_NAME" >> $GITHUB_ENV
-          echo "::set-output name=branch_name::$BRANCH_NAME"
 
       - name: Validate Environment
         run: |
@@ -84,8 +81,6 @@ jobs:
     name: Terraform Plan
     needs: setup-terraform
     runs-on: ubuntu-latest
-    env:
-      BRANCH_NAME: ${{ needs.setup-terraform.outputs.branch_name }}
 
     steps:
       - name: Checkout Code
@@ -124,8 +119,6 @@ jobs:
     name: Terraform Apply
     needs: terraform-plan
     runs-on: ubuntu-latest
-    env:
-      BRANCH_NAME: ${{ needs.setup-terraform.outputs.branch_name }}
 
     steps:
       - name: Checkout Code
