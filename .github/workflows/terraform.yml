@@ -33,7 +33,7 @@ jobs:
 
   setup-terraform:
     name: Setup Terraform
-    needs: authenticate  # Ensures authentication is done first
+    needs: authenticate
     runs-on: ubuntu-latest
     outputs:
       branch_name: ${{ steps.set_branch_name.outputs.BRANCH_NAME }}
@@ -46,6 +46,16 @@ jobs:
         uses: hashicorp/setup-terraform@v2
         with:
           terraform_version: 1.10.5
+
+      - name: Cache Terraform Binary and Plugins
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/.terraform.d/plugin-cache
+            /usr/local/bin/terraform
+          key: terraform-${{ runner.os }}-${{ hashFiles('**/*.tf') }}
+          restore-keys: |
+            terraform-${{ runner.os }}-
 
       - name: Display Branch Name
         run: |
@@ -81,6 +91,16 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v4
 
+      - name: Restore Terraform Binary and Plugins
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/.terraform.d/plugin-cache
+            /usr/local/bin/terraform
+          key: terraform-${{ runner.os }}-${{ hashFiles('**/*.tf') }}
+          restore-keys: |
+            terraform-${{ runner.os }}-
+
       - name: Terraform Init
         run: |
           echo "Using branch name: $BRANCH_NAME"
@@ -110,6 +130,16 @@ jobs:
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
+
+      - name: Restore Terraform Binary and Plugins
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/.terraform.d/plugin-cache
+            /usr/local/bin/terraform
+          key: terraform-${{ runner.os }}-${{ hashFiles('**/*.tf') }}
+          restore-keys: |
+            terraform-${{ runner.os }}-
 
       - name: Terraform Apply
         run: |
