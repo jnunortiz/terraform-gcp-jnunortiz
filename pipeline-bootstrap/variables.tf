@@ -6,15 +6,19 @@ variable "project_id" {
 variable "region" {
   description = "The GCP region"
   type        = string
-  default     = "us-central1"
 }
 
 variable "github_repo" {
-  description = "The GitHub repository in the format 'owner/repo'"
+  description = "The GitHub repository name"
   type        = string
 }
 
 variable "github_org" {
-  description = "The GitHub organization in the format 'owner/'"
+  description = "The GitHub organization name"
+  type        = string
+}
+
+variable "environment" {
+  description = "The environment for this deployment (e.g., dev, prod)"
   type        = string
 }

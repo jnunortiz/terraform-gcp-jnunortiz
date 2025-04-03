@@ -1,0 +1,5 @@
+environment = "dev"
+project_id  = "terraform-gcp-jnunortiz-dev"
+region      = "europe-west3"
+github_org  = "my-github-org"
+github_repo = "my-github-repo"

@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - dev
+      - prod
   workflow_dispatch:
 
 env:
@@ -60,7 +61,7 @@ jobs:
         run: |
           if [ -d "$BRANCH_NAME" ]; then
             cd "$BRANCH_NAME"
-            terraform plan
+            terraform plan -var-file="$BRANCH_NAME.tfvars"
           else
             echo "Directory $BRANCH_NAME does not exist, skipping terraform plan."
           fi
@@ -69,7 +70,7 @@ jobs:
         run: |
           if [ -d "$BRANCH_NAME" ]; then
             cd "$BRANCH_NAME"
-            terraform apply -auto-approve
+            terraform apply -auto-approve -var-file="$BRANCH_NAME.tfvars"
           else
             echo "Directory $BRANCH_NAME does not exist, skipping terraform apply."
           fi

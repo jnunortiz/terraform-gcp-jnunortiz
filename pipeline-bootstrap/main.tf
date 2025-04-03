@@ -5,8 +5,8 @@ provider "google" {
 
 # Create the service account
 resource "google_service_account" "terraform_service_account" {
-  account_id   = "terraform-github-account"
-  display_name = "Terraform Github Account"
+  account_id   = "${var.environment}-terraform-github-account"
+  display_name = "${var.environment} Terraform GitHub Account"
 }
 
 # Assign IAM roles to the service account
@@ -25,16 +25,16 @@ resource "google_project_iam_member" "service_account_roles" {
 
 # Configure workload identity federation
 resource "google_iam_workload_identity_pool" "github_actions_pool" {
-  workload_identity_pool_id = "github-actions-pool"
-  display_name              = "GitHub Actions WIP"
-  description               = "Workload Identity Pool for GitHub Actions"
+  workload_identity_pool_id = "${var.environment}-github-actions-pool"
+  display_name              = "${var.environment} GitHub Actions WIP"
+  description               = "Workload Identity Pool for GitHub Actions in ${var.environment} environment"
 }
 
 resource "google_iam_workload_identity_pool_provider" "github_provider" {
   workload_identity_pool_id = google_iam_workload_identity_pool.github_actions_pool.workload_identity_pool_id
   workload_identity_pool_provider_id = "github"
-  display_name              = "GitHub Actions Provider"
-  attribute_condition = "attribute.repository.startsWith('${var.github_org}')"
+  display_name              = "${var.environment} GitHub Actions Provider"
+  attribute_condition       = "attribute.repository.startsWith('${var.github_org}')"
   attribute_mapping = {
     "google.subject"       = "assertion.sub"
     "attribute.actor"      = "assertion.actor"
