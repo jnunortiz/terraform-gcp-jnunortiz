@@ -14,7 +14,6 @@ jobs:
   authenticate:
     name: Authenticate to Google Cloud
     runs-on: ubuntu-latest
-
     permissions:
       id-token: write
       contents: read
@@ -23,32 +22,24 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v4
 
-      - id: 'auth'
+      - id: auth
         name: Authenticate to Google Cloud
         uses: google-github-actions/auth@v2
         with:
           workload_identity_provider: ${{ env.GCP_WORKLOAD_ID_PROVIDER }}
           service_account: ${{ env.GCP_SERVICE_ACCOUNT_EMAIL }}
 
-      - id: 'gcloud'
-        name: 'gcloud'
-        run: |-
-          gcloud auth login --brief --cred-file="${{ steps.auth.outputs.credentials_file_path }}"
-          gcloud services list
-
-      - name: Capture credentials file path
-        id: capture-credentials-path
+      - id: capture-creds
+        name: Capture Credentials File Path
         run: |
-          # Capture the path of the credentials file that was created dynamically
-          CREDENTIALS_FILE_PATH=$(ls /home/runner/work/terraform-gcp-jnunortiz/terraform-gcp-jnunortiz/gha-creds-*.json)
-          echo "Credential file created at: $CREDENTIALS_FILE_PATH"
-          echo "CREDENTIALS_PATH=$CREDENTIALS_FILE_PATH" >> $GITHUB_ENV
-  
-      - name: Save the credentials as an artifact
+          echo "Credentials file path: ${{ steps.auth.outputs.credentials_file_path }}"
+          echo "CREDENTIALS_PATH=${{ steps.auth.outputs.credentials_file_path }}" >> $GITHUB_OUTPUT
+
+      - name: Upload GCP Credentials Artifact
         uses: actions/upload-artifact@v4
         with:
           name: gcp-credentials
-          path: ${{ env.CREDENTIALS_PATH }}
+          path: ${{ steps.auth.outputs.credentials_file_path }}
 
   validate-branch:
     name: Setup Terraform
@@ -90,7 +81,7 @@ jobs:
     needs: validate-branch
     runs-on: ubuntu-latest
     env:
-      BRANCH_NAME: ${{needs.validate-branch.outputs.BRANCH_NAME}}
+      BRANCH_NAME: ${{ needs.validate-branch.outputs.BRANCH_NAME }}
 
     steps:
       - name: Checkout Code
@@ -101,14 +92,14 @@ jobs:
         with:
           terraform_version: 1.10.5
 
-      - name: Download GCP Credentials
+      - name: Download GCP Credentials Artifact
         uses: actions/download-artifact@v4
         with:
           name: gcp-credentials
 
-      - name: Set the credentials environment variable
+      - name: Set GOOGLE_APPLICATION_CREDENTIALS
         run: |
-          CREDENTIALS_FILE_PATH=$(find $(pwd) -name 'gha-creds-*.json' | head -n 1)
+          CREDENTIALS_FILE_PATH=$(find "$(pwd)" -maxdepth 1 -name 'gha-creds-*.json' | head -n 1)
           echo "Credentials file found at: $CREDENTIALS_FILE_PATH"
           echo "GOOGLE_APPLICATION_CREDENTIALS=$CREDENTIALS_FILE_PATH" >> $GITHUB_ENV
 
@@ -136,7 +127,7 @@ jobs:
     needs: terraform-plan
     runs-on: ubuntu-latest
     env:
-      BRANCH_NAME: ${{needs.validate-branch.outputs.BRANCH_NAME}}
+      BRANCH_NAME: ${{ needs.validate-branch.outputs.BRANCH_NAME }}
 
     steps:
       - name: Checkout Code
@@ -147,14 +138,14 @@ jobs:
         with:
           terraform_version: 1.10.5
 
-      - name: Download GCP Credentials
+      - name: Download GCP Credentials Artifact
         uses: actions/download-artifact@v4
         with:
           name: gcp-credentials
 
-      - name: Set the credentials environment variable
+      - name: Set GOOGLE_APPLICATION_CREDENTIALS
         run: |
-          CREDENTIALS_FILE_PATH=$(find $(pwd) -name 'gha-creds-*.json' | head -n 1)
+          CREDENTIALS_FILE_PATH=$(find "$(pwd)" -maxdepth 1 -name 'gha-creds-*.json' | head -n 1)
           echo "Credentials file found at: $CREDENTIALS_FILE_PATH"
           echo "GOOGLE_APPLICATION_CREDENTIALS=$CREDENTIALS_FILE_PATH" >> $GITHUB_ENV
 
