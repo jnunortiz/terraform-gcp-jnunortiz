@@ -102,7 +102,9 @@ jobs:
 
       - name: Set the credentials environment variable
         run: |
-          export GOOGLE_APPLICATION_CREDENTIALS=$(pwd)/gha-creds-*.json
+          CREDENTIALS_FILE_PATH=$(find . -name 'gha-creds-*.json' | head -n 1)
+          echo "Credentials file found at: $CREDENTIALS_FILE_PATH"
+          echo "GOOGLE_APPLICATION_CREDENTIALS=$CREDENTIALS_FILE_PATH" >> $GITHUB_ENV
 
       - name: Terraform Init
         run: |
@@ -146,7 +148,9 @@ jobs:
 
       - name: Set the credentials environment variable
         run: |
-          export GOOGLE_APPLICATION_CREDENTIALS=$(pwd)/gha-creds-*.json
+          CREDENTIALS_FILE_PATH=$(find . -name 'gha-creds-*.json' | head -n 1)
+          echo "Credentials file found at: $CREDENTIALS_FILE_PATH"
+          echo "GOOGLE_APPLICATION_CREDENTIALS=$CREDENTIALS_FILE_PATH" >> $GITHUB_ENV
 
       - name: Terraform Apply
         run: |
